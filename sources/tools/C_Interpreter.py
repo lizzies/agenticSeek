@@ -1,12 +1,12 @@
 import subprocess
-import os
+import os, sys
 import tempfile
 import re
 
-if __name__ == "__main__":
-    from tools import Tools
-else:
-    from sources.tools.tools import Tools
+if __name__ == "__main__": # if running as a script for individual testing
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
+from sources.tools.tools import Tools
 
 class CInterpreter(Tools):
     """
@@ -15,6 +15,8 @@ class CInterpreter(Tools):
     def __init__(self):
         super().__init__()
         self.tag = "c"
+        self.name = "C Interpreter"
+        self.description = "This tool allows the agent to execute C code."
 
     def execute(self, codes: str, safety=False) -> str:
         """
@@ -40,7 +42,7 @@ class CInterpreter(Tools):
                     compile_command,
                     capture_output=True,
                     text=True,
-                    timeout=10
+                    timeout=60
                 )
 
                 if compile_result.returncode != 0:
@@ -51,7 +53,7 @@ class CInterpreter(Tools):
                     run_command,
                     capture_output=True,
                     text=True,
-                    timeout=10
+                    timeout=120
                 )
 
                 if run_result.returncode != 0:

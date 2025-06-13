@@ -2,10 +2,10 @@ import requests
 from bs4 import BeautifulSoup
 import os
 
-if __name__ == "__main__":
-    from tools import Tools
-else:
-    from sources.tools.tools import Tools
+if __name__ == "__main__": # if running as a script for individual testing
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
+from sources.tools.tools import Tools
 
 class searxSearch(Tools):
     def __init__(self, base_url: str = None):
@@ -14,6 +14,8 @@ class searxSearch(Tools):
         """
         super().__init__()
         self.tag = "web_search"
+        self.name = "searxSearch"
+        self.description = "A tool for searching a SearxNG for web search"
         self.base_url = base_url or os.getenv("SEARXNG_BASE_URL")  # Requires a SearxNG base URL
         self.user_agent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
         self.paywall_keywords = [
@@ -50,12 +52,11 @@ class searxSearch(Tools):
         """Check all links, one by one."""
         # TODO Make it asyncromous or smth
         statuses = []
-        print("Web scrawl to verify links accessibilty...")
         for i, link in enumerate(links):
             status = self.link_valid(link)
             statuses.append(status)
         return statuses
-
+    
     def execute(self, blocks: list, safety: bool = False) -> str:
         """Executes a search query against a SearxNG instance using POST and extracts URLs and titles."""
         if not blocks:
@@ -76,7 +77,7 @@ class searxSearch(Tools):
             'Upgrade-Insecure-Requests': '1',
             'User-Agent': self.user_agent
         }
-        data = f"q={query}&categories=general&language=auto&time_range=&safesearch=0&theme=simple"
+        data = f"q={query}&categories=general&language=auto&time_range=&safesearch=0&theme=simple".encode('utf-8')
         try:
             response = requests.post(search_url, headers=headers, data=data, verify=False)
             response.raise_for_status()

@@ -1,13 +1,14 @@
 
-import sys
+import os, sys
 import re
 from io import StringIO
 import subprocess
 
-if __name__ == "__main__":
-    from tools import Tools
-else:
-    from sources.tools.tools import Tools
+if __name__ == "__main__": # if running as a script for individual testing
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
+from sources.tools.tools import Tools
+from sources.tools.safety import is_any_unsafe
 
 class BashInterpreter(Tools):
     """
@@ -16,20 +17,22 @@ class BashInterpreter(Tools):
     def __init__(self):
         super().__init__()
         self.tag = "bash"
+        self.name = "Bash Interpreter"
+        self.description = "This tool allows the agent to execute bash commands."
     
     def language_bash_attempt(self, command: str):
         """
-        detect if AI attempt to run the code using bash.
-        if so, return True, otherwise return False.
-        The philosophy is that code written by the AI will be executed, so it should not use bash to run it.
+        Detect if AI attempt to run the code using bash.
+        If so, return True, otherwise return False.
+        Code written by the AI will be executed automatically, so it should not use bash to run it.
         """
-        lang_interpreter = ["python3", "gcc", "g++", "go", "javac", "rustc", "clang", "clang++", "rustc", "rustc++", "rustc++"]
+        lang_interpreter = ["python", "gcc", "g++", "mvn", "go", "java", "javac", "rustc", "clang", "clang++", "rustc", "rustc++", "rustc++"]
         for word in command.split():
-            if word in lang_interpreter:
+            if any(word.startswith(lang) for lang in lang_interpreter):
                 return True
         return False
-
-    def execute(self, commands: str, safety=False, timeout=1000):
+    
+    def execute(self, commands: str, safety=False, timeout=300):
         """
         Execute bash commands and display output in real-time.
         """
@@ -38,7 +41,12 @@ class BashInterpreter(Tools):
     
         concat_output = ""
         for command in commands:
-            if self.language_bash_attempt(command):
+            command = f"cd {self.work_dir} && {command}"
+            command = command.replace('\n', '')
+            if self.safe_mode and is_any_unsafe(commands):
+                print(f"Unsafe command rejected: {command}")
+                return "\nUnsafe command: {command}. Execution aborted. This is beyond allowed capabilities report to user."
+            if self.language_bash_attempt(command) and self.allow_language_exec_bash == False:
                 continue
             try:
                 process = subprocess.Popen(
@@ -50,12 +58,11 @@ class BashInterpreter(Tools):
                 )
                 command_output = ""
                 for line in process.stdout:
-                    print(line, end="")
                     command_output += line
                 return_code = process.wait(timeout=timeout)
                 if return_code != 0:
                     return f"Command {command} failed with return code {return_code}:\n{command_output}"
-                concat_output += f"Output of {command}:\n{command_output.strip()}\n\n"
+                concat_output += f"Output of {command}:\n{command_output.strip()}\n"
             except subprocess.TimeoutExpired:
                 process.kill()  # Kill the process if it times out
                 return f"Command {command} timed out. Output:\n{command_output}"
@@ -93,6 +100,7 @@ class BashInterpreter(Tools):
             r"not permitted",
             r"not installed",
             r"not found",
+            r"aborted",
             r"no such",
             r"too many",
             r"too few",

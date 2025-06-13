@@ -2,17 +2,19 @@
 """
 define a generic tool class, any tool can be used by the agent.
 
-A tool can be used by deepseek like so:
+A tool can be used by a llm like so:
 ```<tool name>
 <code or query to execute>
 ```
+
+we call these "blocks".
 
 For example:
 ```python
 print("Hello world")
 ```
 This is then executed by the tool with its own class implementation of execute().
-A tool is not just for code tool but also API, internet, etc..
+A tool is not just for code tool but also API, internet search, MCP, etc..
 """
 
 import sys
@@ -20,7 +22,10 @@ import os
 import configparser
 from abc import abstractmethod
 
-sys.path.append('..')
+if __name__ == "__main__": # if running as a script for individual testing
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from sources.logger import Logger
 
 class Tools():
     """
@@ -28,47 +33,46 @@ class Tools():
     """
     def __init__(self):
         self.tag = "undefined"
-        self.api_key = None
+        self.name = "undefined"
+        self.description = "undefined"
         self.client = None
         self.messages = []
+        self.logger = Logger("tools.log")
         self.config = configparser.ConfigParser()
-        self.current_dir = self.create_work_dir()
+        self.work_dir = self.create_work_dir()
         self.excutable_blocks_found = False
+        self.safe_mode = True
+        self.allow_language_exec_bash = False
     
-    def check_config_dir_validity(self):
-        """
-        Check if the config directory is valid.
-        """
-        path = self.config['MAIN']['work_dir']
-        if path == "":
-            print("WARNING: Work directory not set in config.ini")
-            return False
-        if path.lower() == "none":
-            print("WARNING: Work directory set to none in config.ini")
-            return False
-        if not os.path.exists(path):
-            print(f"WARNING: Work directory {path} does not exist")
-            return False
-        return True
+    def get_work_dir(self):
+        return self.work_dir
+    
+    def set_allow_language_exec_bash(value: bool) -> None:
+        self.allow_language_exec_bash = value 
+
+    def safe_get_work_dir_path(self):
+        path = None
+        path = os.getenv('WORK_DIR', path)
+        if path is None or path == "":
+            path = self.config['MAIN']['work_dir'] if 'MAIN' in self.config and 'work_dir' in self.config['MAIN'] else None
+        if path is None or path == "":
+            print("No work directory specified, using default.")
+            path = self.create_work_dir()
+        return path
     
     def config_exists(self):
-        """
-        Check if the config file exists.
-        """
+        """Check if the config file exists."""
         return os.path.exists('./config.ini')
 
     def create_work_dir(self):
-        """
-        Create the work directory if it does not exist.
-        """
+        """Create the work directory if it does not exist."""
         default_path = os.path.dirname(os.getcwd())
         if self.config_exists():
             self.config.read('./config.ini')
-            config_path = self.config['MAIN']['work_dir']
-            dir_path = default_path if not self.check_config_dir_validity() else config_path
+            workdir_path = self.safe_get_work_dir_path()
         else:
-            dir_path = default_path
-        return dir_path
+            workdir_path = default_path
+        return workdir_path
 
     @abstractmethod
     def execute(self, blocks:[str], safety:bool) -> str:
@@ -114,16 +118,31 @@ class Tools():
         """
         if save_path is None:
             return
+        self.logger.info(f"Saving blocks to {save_path}")
         save_path_dir = os.path.dirname(save_path)
         save_path_file = os.path.basename(save_path)
-        directory = os.path.join(self.current_dir, save_path_dir)
+        directory = os.path.join(self.work_dir, save_path_dir)
         if directory and not os.path.exists(directory):
-            print(f"Creating directory: {directory}")
+            self.logger.info(f"Creating directory {directory}")
             os.makedirs(directory)
         for block in blocks:
-            print(f"Saving code block to: {save_path}")
             with open(os.path.join(directory, save_path_file), 'w') as f:
                 f.write(block)
+    
+    def get_parameter_value(self, block: str, parameter_name: str) -> str:
+        """
+        Get a parameter name.
+        Args:
+            block (str): The block of text to search for the parameter
+            parameter_name (str): The name of the parameter to retrieve
+        Returns:
+            str: The value of the parameter
+        """
+        for param_line in block.split('\n'):
+            if parameter_name in param_line:
+                param_value = param_line.split('=')[1].strip()
+                return param_value
+        return None
     
     def found_executable_blocks(self):
         """
@@ -159,9 +178,7 @@ class Tools():
             if start_pos == -1:
                 break
 
-            line_start = llm_text.rfind('\n', 0, start_pos) + 1
-            if line_start == 0:
-                line_start = 0
+            line_start = llm_text.rfind('\n', 0, start_pos)+1
             leading_whitespace = llm_text[line_start:start_pos]
 
             end_pos = llm_text.find(end_tag, start_pos + len(start_tag))
@@ -184,20 +201,19 @@ class Tools():
             self.excutable_blocks_found = True
             code_blocks.append(content)
             start_index = end_pos + len(end_tag)
+        self.logger.info(f"Found {len(code_blocks)} blocks to execute")
         return code_blocks, save_path
-
+    
 if __name__ == "__main__":
     tool = Tools()
     tool.tag = "python"
-    rt = tool.load_exec_block("""
-Got it, let me show you the Python files in the current directory using Python:
-
-```python
+    rt = tool.load_exec_block("""```python
 import os
 
 for file in os.listdir():
     if file.endswith('.py'):
         print(file)
 ```
+goodbye!
     """)
     print(rt)

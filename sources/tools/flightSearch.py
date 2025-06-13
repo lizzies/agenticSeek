@@ -1,13 +1,13 @@
-import os
+import os, sys
 import requests
 import dotenv
 
 dotenv.load_dotenv()
 
-if __name__ == "__main__":
-    from tools import Tools
-else:
-    from sources.tools.tools import Tools
+if __name__ == "__main__": # if running as a script for individual testing
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
+from sources.tools.tools import Tools
 
 class FlightSearch(Tools):
     def __init__(self, api_key: str = None):
@@ -16,6 +16,9 @@ class FlightSearch(Tools):
         """
         super().__init__()
         self.tag = "flight_search"
+        self.name = "Flight Search"
+        self.description = "Search for flight information using a flight number via AviationStack API."
+        self.api_key = None
         self.api_key = api_key or os.getenv("AVIATIONSTACK_API_KEY")
 
     def execute(self, blocks: str, safety: bool = True) -> str:
@@ -23,7 +26,7 @@ class FlightSearch(Tools):
             return "Error: No AviationStack API key provided."
         
         for block in blocks:
-            flight_number = block.strip()
+            flight_number = block.strip().lower().replace('\n', '')
             if not flight_number:
                 return "Error: No flight number provided."
 

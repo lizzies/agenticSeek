@@ -1,12 +1,12 @@
 import subprocess
-import os
+import os, sys
 import tempfile
 import re
 
-if __name__ == "__main__":
-    from tools import Tools
-else:
-    from sources.tools.tools import Tools
+if __name__ == "__main__": # if running as a script for individual testing
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
+from sources.tools.tools import Tools
 
 class GoInterpreter(Tools):
     """
@@ -15,6 +15,8 @@ class GoInterpreter(Tools):
     def __init__(self):
         super().__init__()
         self.tag = "go"
+        self.name = "Go Interpreter"
+        self.description = "This tool allows you to execute Go code."
 
     def execute(self, codes: str, safety=False) -> str:
         """
@@ -33,12 +35,15 @@ class GoInterpreter(Tools):
                 f.write(code)
 
             try:
+                env = os.environ.copy()
+                env["GO111MODULE"] = "off"
                 compile_command = ["go", "build", "-o", exec_file, source_file]
                 compile_result = subprocess.run(
                     compile_command,
                     capture_output=True,
                     text=True,
-                    timeout=10
+                    timeout=10,
+                    env=env
                 )
 
                 if compile_result.returncode != 0:
