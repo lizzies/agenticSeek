@@ -220,7 +220,7 @@ Inicie os serviços necessários. Isso iniciará todos os serviços do docker-co
 
 ```sh
 ./start_services.sh full # MacOS
-start ./start_services.cmd full # Windows
+start start_services.cmd full # Windows
 ```
 
 **Aviso:** Este passo fará download e carregará todas as imagens Docker, o que pode levar até 30 minutos. Após iniciar os serviços, aguarde até que o serviço backend esteja totalmente rodando (você verá backend: <info> no log) antes de enviar mensagens. O backend pode demorar mais para iniciar.
@@ -240,7 +240,7 @@ Inicie os serviços:
 
 ```sh
 ./start_services.sh # MacOS
-start ./start_services.cmd # Windows
+start start_services.cmd # Windows
 ```
 
 Depois execute: `uv run cli.py`
@@ -331,7 +331,7 @@ Defina `provider_server_address` para o IP da máquina que rodará o modelo.
 is_local = False
 provider_name = server
 provider_model = deepseek-r1:70b
-provider_server_address = x.x.x.x:3333
+provider_server_address = http://x.x.x.x:3333
 ```
 
 Próximo passo: [Inicie os serviços e rode o AgenticSeek](#Start-services-and-Run)

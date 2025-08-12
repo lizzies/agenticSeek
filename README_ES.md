@@ -220,7 +220,7 @@ Inicia los servicios requeridos. Esto iniciará todos los servicios del docker-c
 
 ```sh
 ./start_services.sh full # MacOS
-start ./start_services.cmd full # Windows
+start start_services.cmd full # Windows
 ```
 
 **Advertencia:** Este paso descargará y cargará todas las imágenes de Docker, lo que puede tomar hasta 30 minutos. Después de iniciar los servicios, espera hasta que el servicio backend esté completamente ejecutándose (deberías ver backend: <info> en el log) antes de enviar cualquier mensaje. Los servicios backend pueden tardar más en iniciar que otros.
@@ -240,7 +240,7 @@ Inicia los servicios:
 
 ```sh
 ./start_services.sh # MacOS
-start ./start_services.cmd # Windows
+start start_services.cmd # Windows
 ```
 
 Luego ejecuta: `uv run cli.py` 
@@ -329,7 +329,7 @@ Establece `provider_server_address` a la dirección IP de la máquina que ejecut
 is_local = False
 provider_name = server
 provider_model = deepseek-r1:70b
-provider_server_address = x.x.x.x:3333
+provider_server_address = http://x.x.x.x:3333
 ```
 
 Siguiente paso: [Iniciar servicios y ejecutar AgenticSeek](#Iniciar-servicios-y-ejecutar)

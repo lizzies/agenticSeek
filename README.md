@@ -249,15 +249,17 @@ Next step: [Start services and run AgenticSeek](#Start-services-and-Run)
 
 By default AgenticSeek is run fully in docker.
 
+**Option 1:** Run in Docker, use web interface:
+
 Start required services. This will start all services from the docker-compose.yml, including:
     - searxng
     - redis (required by searxng)
     - frontend
-    - backend (if using `full`)
+    - backend (if using `full` when using the web interface)
 
 ```sh
 ./start_services.sh full # MacOS
-start ./start_services.cmd full # Window
+start start_services.cmd full # Window
 ```
 
 **Warning:** This step will download and load all Docker images, which may take up to 30 minutes. After starting the services, please wait until the backend service is fully running (you should see **backend: "GET /health HTTP/1.1" 200 OK** in the log) before sending any messages. The backend services might take 5 minute to start on first run.
@@ -266,7 +268,7 @@ Go to `http://localhost:3000/` and you should see the web interface.
 
 *Troubleshooting service start:* If these scripts fail, ensure Docker Engine is running and Docker Compose (V2, `docker compose`) is correctly installed. Check the output in the terminal for error messages. See [FAQ: Help! I get an error when running AgenticSeek or its scripts.](#faq-troubleshooting)
 
-**Optional:** Run on host (CLI mode):
+**Option 2:** CLI mode:
 
 To run with CLI interface you would have to install package on host:
 
@@ -275,11 +277,14 @@ To run with CLI interface you would have to install package on host:
 ./install.bat # windows
 ```
 
-Start services:
+Start required services. This will start some services from the docker-compose.yml, including:
+    - searxng
+    - redis (required by searxng)
+    - frontend
 
 ```sh
 ./start_services.sh # MacOS
-start ./start_services.cmd # Window
+start start_services.cmd # Window
 ```
 
 Use the CLI: `uv run cli.py`
@@ -375,7 +380,7 @@ Set the `provider_server_address` to the ip address of the machine that will run
 is_local = False
 provider_name = server
 provider_model = deepseek-r1:70b
-provider_server_address = x.x.x.x:3333
+provider_server_address = http://x.x.x.x:3333
 ```
 
 
@@ -645,7 +650,18 @@ We’re looking for developers to improve AgenticSeek! Check out open issues or 
 
 [Contribution guide](./docs/CONTRIBUTING.md)
 
-[![Star History Chart](https://api.star-history.com/svg?repos=Fosowl/agenticSeek&type=Date)](https://www.star-history.com/#Fosowl/agenticSeek&Date)
+
+## Sponsors:
+
+Want to level up AgenticSeek capabilities with features like flight search, trip planning, or snagging the best shopping deals? Consider crafting a custom tool with SerpApi to unlock more Jarvis-like capabilities. With SerpApi, you can turbocharge your agent for specialized tasks while staying in full control.
+
+<a href="https://serpapi.com/"><img src="./media/banners/sponsor_banner_serpapi.png" height="350" alt="SerpApi Banner" ></a>
+
+See [Contributing.md](./docs/CONTRIBUTING.md) to learn how to integrate custom tools!
+
+### **Patron sponsor**:
+
+- [tatra-labs](https://github.com/tatra-labs)
 
 ## Maintainers:
 
@@ -653,14 +669,8 @@ We’re looking for developers to improve AgenticSeek! Check out open issues or 
 
  > [antoineVIVIES](https://github.com/antoineVIVIES) | Taipei Time 
 
- > [steveh8758](https://github.com/steveh8758) | Taipei Time 
-
 ## Special Thanks:
 
  > [tcsenpai](https://github.com/tcsenpai) and [plitc](https://github.com/plitc) For helping with backend dockerization
 
-## Sponsors:
-
-5$ or more Monthly sponsor appear here:
-- **tatra-labs**
-
+[![Star History Chart](https://api.star-history.com/svg?repos=Fosowl/agenticSeek&type=Date)](https://www.star-history.com/#Fosowl/agenticSeek&Date)

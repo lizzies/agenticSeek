@@ -220,7 +220,7 @@ Démarrez les services requis. Cela lancera tous les services du docker-compose.
 
 ```sh
 ./start_services.sh full # MacOS
-start ./start_services.cmd full # Windows
+start start_services.cmd full # Windows
 ```
 
 **Attention :** Cette étape téléchargera et chargera toutes les images Docker, ce qui peut prendre jusqu’à 30 minutes. Après le démarrage, attendez que le backend soit bien lancé (vous devriez voir backend: <info> dans les logs) avant d’envoyer des messages. Le backend peut mettre plus de temps à démarrer.
@@ -240,7 +240,7 @@ Démarrez les services :
 
 ```sh
 ./start_services.sh # MacOS
-start ./start_services.cmd # Windows
+start start_services.cmd # Windows
 ```
 
 Puis lancez : `uv run cli.py`
@@ -331,7 +331,7 @@ Mettez `provider_server_address` à l’adresse IP de la machine qui exécute le
 is_local = False
 provider_name = server
 provider_model = deepseek-r1:70b
-provider_server_address = x.x.x.x:3333
+provider_server_address = http://x.x.x.x:3333
 ```
 
 Étape suivante : [Démarrer les services et lancer AgenticSeek](#Start-services-and-Run)
